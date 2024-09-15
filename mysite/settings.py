@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     # "crispy_bootstrap5",
     "crispy_tailwind",
     "django_cotton",
+    "accounts",
     "app",
     "chat",
     "melon",
