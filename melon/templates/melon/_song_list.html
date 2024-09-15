@@ -1,0 +1,9 @@
+{% for song in song_list %}
+  <tr>
+    <td><img src='{{ song.album_cover_url }}' style="width: 100px;"/></td>
+    <td>{{ song.rank }}</td>
+    <td>{{ song.album_name }}</td>
+    <td>{{ song.title }}</td>
+    <td>{{ song.artist_name }}</td>
+  </tr>
+{% endfor %}
