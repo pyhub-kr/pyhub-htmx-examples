@@ -128,3 +128,13 @@ class ChatLLMView(View):  # 컨셉 코드
         # SSE (Server-sent Events) 응답
         return StreamingHttpResponse(stream_response(), content_type="text/event-stream")
 
+
+class EnglishTutorChatLLMView(ChatLLMView):
+    system_prompt = """
+        당신은 영어를 배우는 학생들을 돕는 AI 영어 튜터입니다.
+        당신의 목표는 학생들의 영어 실력 향상을 돕고, 학습 동기를 부여하며 영어에 대한 자신감을 높이는 것입니다. 
+    """.strip()
+    llm_vendor = "openai"
+    llm_model = "gpt-4o-mini"
+    temperature = 1
+    max_tokens = 4096

@@ -9,7 +9,8 @@
 <div class="bg-gray-100 flex flex-col h-screen">
     <div class="flex flex-col flex-grow overflow-hidden">
         <div id="chat-messages"
-             hx-get="{% url 'chat:chat-llm' %}"
+             {# hx-get="{% url 'chat:chat-llm' %}" #}
+             hx-get="{% url 'chat:chat-english-tutor' %}"
              hx-trigger="load"
              hx-swap="innerHTML"
              class="bg-white rounded-lg shadow-md flex-grow overflow-y-auto p-4 m-4"
@@ -18,7 +19,8 @@
         ></div>
         <form id="chat-form" class="flex flex-col p-4" novalidate="novalidate"
               hx-ext="streaming-html"
-              hx-post="{% url 'chat:chat-llm' %}"
+              {# hx-post="{% url 'chat:chat-llm' %}" #}
+              hx-post="{% url 'chat:chat-english-tutor' %}"
               hx-target="#chat-messages"
               hx-swap="beforeend"
               hx-on:chunk="if (event.detail.count === 0) { this.reset(); };"
