@@ -15,17 +15,27 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+import environ
+
+env = environ.Env()
+
+# Read .env file if it exists
+env_file = BASE_DIR / ".env"
+if env_file.is_file():
+    with open(env_file, "r", encoding="utf-8") as f:
+        env.read_env(f, overwrite=True)
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-8bpk#k2i*7(*74rk*@(2c66nm4=)p51-!)nd_u9t3m+_44waae"
+SECRET_KEY = env.str("SECRET_KEY", default="django-insecure-8bpk#k2i*7(*74rk*@(2c66nm4=)p51-!)nd_u9t3m+_44waae")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool("DEBUG", default=True)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
 
 
 # Application definition
@@ -81,10 +91,7 @@ WSGI_APPLICATION = "mysite.wsgi.application"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
+    "default": env.db("DATABASE_URL", default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
 }
 
 
@@ -110,19 +117,19 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = env.str("LANGUAGE_CODE", default="ko-kr")
 
 TIME_ZONE = "UTC"
 
-USE_I18N = True
+USE_I18N = env.bool("USE_I18N", default=True)
 
-USE_TZ = True
+USE_TZ = env.bool("USE_TZ", default=True)
 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = "static/"
+STATIC_URL = env.str("STATIC_URL", default="static/")
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
