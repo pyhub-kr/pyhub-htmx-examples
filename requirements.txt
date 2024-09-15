@@ -1,4 +1,5 @@
 django~=5.1.0
+channels[daphne]
 django-cotton==0.9.40
 django-environ==0.11.2
 openai==1.45.0
