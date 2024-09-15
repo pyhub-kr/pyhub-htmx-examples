@@ -1,0 +1,62 @@
+<!-- 서버 구동 방법 : html-3000 폴더에서 python -m http.server 3000 -->
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login/Logout Example</title>
+    <script src="//unpkg.com/alpinejs" defer></script>
+    <script>
+        const API_HOST = 'http://localhost:8000';
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('auth', () => ({
+                isAuthenticated: false,
+                username: '무명',
+                init() {
+                    this.checkAuthStatus();
+                },
+                checkAuthStatus() {
+                    fetch(`${API_HOST}/accounts/profile.json`, {
+                        credentials: 'include'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        this.isAuthenticated = data.is_authenticated === true;
+                        this.username = data.username;
+                    });
+                },
+                login() {
+                    window.location.href = `${API_HOST}/accounts/login/?next=${encodeURIComponent(window.location.href)}`;
+                },
+                logout() {
+                    const csrftoken = window.document.cookie
+                        .split('; ')
+                        .find(row => row.startsWith('csrftoken='))
+                        ?.split('=')[1];
+                    const formEl = document.getElementById('logoutForm');
+                    formEl.csrfmiddlewaretoken.value = csrftoken;
+                    formEl.next.value = window.location.href;
+                    formEl.submit();
+                }
+            }));
+        });
+    </script>
+</head>
+<body>
+    <div x-data="auth">
+        <h1>Login/Logout Example</h1>
+        <div x-show="!isAuthenticated">
+            <button @click="login">로그인</button>
+        </div>
+        <div x-show="isAuthenticated">
+            <p>안녕하세요, <span x-text="username"></span>님!</p>
+            <button @click="logout">로그아웃</button>
+        </div>
+        <form id="logoutForm" action="http://localhost:8000/accounts/logout/" method="post" style="display: none;">
+            <input type="hidden" name="csrfmiddlewaretoken" value="" />
+            <input type="hidden" name="next" value="" />
+        </form>
+    </div>
+</body>
+</html>

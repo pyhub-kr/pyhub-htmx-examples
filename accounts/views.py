@@ -1,6 +1,7 @@
 from django.contrib.auth.views import LoginView as DjangoLoginView
 from django.contrib.auth.views import LogoutView as DjangoLogoutView
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from django.shortcuts import render
 
 from accounts.forms import LoginForm
@@ -32,3 +33,10 @@ logout = LogoutView.as_view()
 @login_required
 def profile(request):
     return render(request, 'accounts/profile.html')
+
+
+def profile_json(request):
+    return JsonResponse({
+        'is_authenticated': request.user.is_authenticated,
+        'username': request.user.username or 'anonymous',
+    })
