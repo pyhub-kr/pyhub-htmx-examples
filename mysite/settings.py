@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django_cotton",
     "app",
+    "chat",
     "melon",
 ]
 
