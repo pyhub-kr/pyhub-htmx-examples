@@ -1,0 +1,19 @@
+<c-vars initial=0 />
+
+<div x-data="{ count: {{ initial }} }"
+     x-on:increment="count++"
+     class="p-4 bg-gray-100 rounded-lg shadow-md {{ class }}"
+     {{ attrs }}>
+    <p class="mb-2 text-sm text-gray-600">
+        초기값:
+        <span class="font-semibold">{{ initial|default:0 }}</span>
+    </p>
+    <p class="mb-4 text-lg">
+        카운터:
+        <span x-text="count" class="font-bold text-blue-600"></span>
+    </p>
+    <button @click="count++" class="px-4 py-2 bg-blue-500 text-white rounded
+                                    hover:bg-blue-600 transition duration-300">
+        증가
+    </button>
+</div>
