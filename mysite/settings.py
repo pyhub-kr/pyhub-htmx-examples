@@ -138,3 +138,9 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# naver map
+# django-environ 사용을 추천
+
+NCP_MAP_CLIENT_ID = env.str("NCP_MAP_CLIENT_ID", default="")
