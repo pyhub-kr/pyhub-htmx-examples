@@ -1,0 +1,34 @@
+{# widgets/templates/cotton/widgets/_weather.html #}
+
+<h2 class="text-2xl font-semibold mb-2">현재 날씨</h2>
+<p class="text-4xl font-bold mb-2">28.2°C</p>
+<p class="text-lg mb-4">체감 온도: 29.1°C</p>
+<p class="text-sm text-gray-600 mb-4">
+    갱신일시: {{ now|date:"Y년 m월 d일 H:i:s" }}
+</p>
+<div class="grid grid-cols-2 gap-4">
+    <div>
+        <p class="text-sm text-gray-600">습도</p>
+        <p class="text-lg font-semibold">66%</p>
+    </div>
+    <div>
+        <p class="text-sm text-gray-600">바람</p>
+        <p class="text-lg font-semibold">남서 1.4 m/s</p>
+    </div>
+    <div>
+        <p class="text-sm text-gray-600">일출</p>
+        <p class="text-lg font-semibold">06:06</p>
+    </div>
+    <div>
+        <p class="text-sm text-gray-600">일몰</p>
+        <p class="text-lg font-semibold">18:54</p>
+    </div>
+</div>
+<div class="mt-6">
+    <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mr-2">
+        날씨예보 바로가기
+    </button>
+    <button class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
+        강수 재해정보
+    </button>
+</div>

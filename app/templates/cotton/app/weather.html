@@ -1,0 +1,10 @@
+<c-vars interval="1s"></c-vars>
+
+<div hx-get="{% url 'app:weather' %}"
+     {# 브라우저 캐싱을 막기 위해, Query Parameter로 현재 시각 추가 #}
+     hx-vals='js:{"_": Date.now()}'
+     {# 초기 로딩 및 지정 시간 단위로 htmx 요청 발생 #}
+     hx-trigger="load, every {{ interval }}"
+     hx-swap="innerHTML"
+     {{ attrs }}
+></div>
