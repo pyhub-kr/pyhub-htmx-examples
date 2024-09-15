@@ -29,7 +29,11 @@ class LLMResponse:
 
     PRICES = {
         # https://openai.com/api/pricing/ : 가격은 수시로 바뀔 수 있습니다.
-        ("openai", "gpt-4o"): (5, 15),  # 1M Tokens, USD
+        # 1M Tokens, USD
+        ("openai", "o1-preview"): (15, 60),
+        ("openai", "o1-mini"): (3, 12),
+        ("openai", "gpt-4o"): (5, 15),
+        ("openai", "gpt-4o-mini"): (0.15, 0.6),
     }
     TOKENS_UNIT = 1_000_000
 
