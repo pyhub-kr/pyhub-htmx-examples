@@ -1,2 +1,2 @@
 django~=5.1.0
-
+django-cotton==0.9.40
