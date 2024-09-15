@@ -1,11 +1,18 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2 class="text-2xl font-semibold mb-4">Buttons 컴포넌트</h2>
+    <h2 class="text-2xl font-semibold mb-2">Buttons 컴포넌트</h2>
     <div class="flex flex-row gap-2 p-1">
         <c-button>기본 버튼</c-button>
         <c-button class="bg-red-500 hover:bg-red-600 focus:ring-red-400">Red 버튼 #1</c-button>
         <c-button-red>Red 버튼 #2</c-button-red>
         <c-button-green>Green 버튼</c-button-green>
+    </div>
+
+    <h2 class="text-2xl font-semibold mt-8 mb-2">아이콘 컴포넌트</h2>
+    <div class="flex flex-row p-1">
+        <c-icons.plane class="size-20 text-red-500" />
+        <c-icons.plane class="size-20 text-gray-500 animate-bounce" stroke_width="10" />
+        <c-icons.photo-album class="size-20 text-blue-500" />
     </div>
 {% endblock %}
