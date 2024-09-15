@@ -146,3 +146,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # django-environ 사용을 추천
 
 NCP_MAP_CLIENT_ID = env.str("NCP_MAP_CLIENT_ID", default="")
+
+
+# LLM
+
+OPENAI_API_KEY = env.str("OPENAI_API_KEY", default="")
