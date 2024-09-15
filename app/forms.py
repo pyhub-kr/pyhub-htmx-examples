@@ -1,4 +1,6 @@
+from crispy_forms.bootstrap import PrependedText
 from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Row, Field
 from crispy_tailwind.layout import Submit
 
 from django import forms
@@ -19,10 +21,24 @@ class DemoForm(forms.Form):
 
     # 폼에 파일/이미지 필드가 있다면, enctype="multipart/form-data"가 자동 추가됩니다.
     helper = FormHelper()
-    # helper.form_action = ""                  # action 속성
-    # helper.form_tag = True                   # form 태그 자동 생성
-    # helper.disable_csrf = False              # csrf token 자동 추가
     helper.attrs = {"novalidate": True}        # form 태그에 추가할 속성
+
+    # 원하는 Row/Column 배치로 레이아웃을 구성 지원
+    helper.layout = Layout(
+        "title",  # crispy-bootstrap5 지원, 커스텀 필드
+        "summary",
+        "content",
+        "content_en",
+        # 1행 2열 레이아웃
+        Row(
+            # 기본 위젯 렌더링 + 추가 속성 지정 + 래핑 클래스 지정
+            Field("author", autocomplete="off", wrapper_class="w-1/2"),
+            # Bootstrap 지원 필드 + 래핑 클래스 지정
+            PrependedText("instagram_username", "@", wrapper_class="w-1/2"),
+            css_class="flex flex-row gap-4",
+        ),
+    )
+
     helper.add_input(Submit("submit", "제출"))  # submit 버튼 추가
 
     def clean(self):
