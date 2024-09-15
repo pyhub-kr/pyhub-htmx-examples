@@ -165,3 +165,22 @@ OPENAI_API_KEY = env.str("OPENAI_API_KEY", default="")
 # CRISPY_TEMPLATE_PACK = "bootstrap5"
 CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"
 CRISPY_TEMPLATE_PACK = "tailwind"
+
+
+# Authentication
+
+from urllib.parse import urlparse
+
+
+FRONT_HOST_WITH_SCHEME = env.str("FRONT_HOST", default="http://localhost:3000")
+FRONT_HOST = urlparse(FRONT_HOST_WITH_SCHEME).netloc
+
+
+# fetch 요청을 허용할 출처(origin) 목록
+CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=[FRONT_HOST_WITH_SCHEME])
+# FE 단에서 fetch 요청 시에 인증정보(쿠키) 포함을 허용할 지 여부
+CORS_ALLOW_CREDENTIALS = env.bool("CORS_ALLOW_CREDENTIALS", default=True)
+
+
+# 지정 출처(origin)으로부터의 POST 요청을 허용하고 CSRF 검증 수행
+CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[FRONT_HOST_WITH_SCHEME])

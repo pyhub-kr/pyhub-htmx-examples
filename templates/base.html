@@ -10,11 +10,22 @@
   </head>
   <body>
     <div class="container mx-auto px-4 py-8 max-w-3xl">
+      <nav class="flex justify-end mb-4">
+        {% if user.is_authenticated %}
+          <a href="{% url 'accounts:profile' %}" class="text-blue-600 hover:underline mr-4">프로필</a>
+          <form method="post" action="{% url 'accounts:logout' %}" class="inline">
+            {% csrf_token %}
+            <button type="submit" class="text-blue-600 hover:underline">로그아웃</button>
+          </form>
+        {% else %}
+          <a href="{% url 'accounts:login' %}" class="text-blue-600 hover:underline">로그인</a>
+        {% endif %}
+      </nav>
       <h1 class="text-3xl font-bold mb-6">pyhub-htmx-examples</h1>
       <div class="mb-8">
         {% block content %}
         {% endblock %}
-    </div>
+      </div>
       <hr class="my-6 border-t border-gray-300" />
       <footer class="text-center text-gray-600 text-sm">
         copyright 2024
