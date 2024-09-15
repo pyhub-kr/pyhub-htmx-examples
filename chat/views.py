@@ -52,8 +52,9 @@ class ChatLLMView(View):  # 컨셉 코드
         await self.request.session.asave()
 
     async def clear_messages(self) -> None:
-        await self.request.session.apop("chat_messages")
-        await self.request.session.asave()
+        if await self.request.session.aexists("chat_messages"):
+            await self.request.session.apop("chat_messages")
+            await self.request.session.asave()
 
     async def get(self, request: HttpRequest) -> HttpResponse:
         messages = await self.get_messages()
@@ -63,6 +64,12 @@ class ChatLLMView(View):  # 컨셉 코드
 
         async def stream_response() -> AsyncGenerator[str, None]:
             user_text = request.POST.get("user_text", "")
+
+            if user_text == "/clear":
+                await self.clear_messages()
+                yield "<p>세션에 저장된 메세지를 삭제했습니다. 새로 고침해주세요.</p>"
+                return
+
             if user_text:
                 # photos를 시스템에 저장했다면, URL을 통해 보여줄 수 있습니다.
                 yield render_to_string(self.get_template_name(), {
