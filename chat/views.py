@@ -1,8 +1,10 @@
 from typing import List, AsyncGenerator
+from uuid import uuid4
 
 from django.core.files import File
 from django.http import StreamingHttpResponse
 from django.shortcuts import render
+from django.utils.html import escapejs
 from django.views.decorators.http import require_POST
 
 from .forms import MessageForm
@@ -36,13 +38,33 @@ async def message(request):
             vendor=vendor, model=model, system_prompt="", user_prompt=user_text,
             chat_history=[], temperature=1.0, max_tokens=1024, stream=True, files=photos,
         )
-        assistant_text = ""
+
+        is_first = True
+        assistant_message_id: str = f"message-{uuid4().hex}"
         llm_chunk_response = LLMResponse()
         async for llm_chunk_response in llm_stream_response:
             if llm_chunk_response.text:
-                assistant_text += llm_chunk_response.text
-                yield f'''<p><strong class="mr-1">어시스턴트</strong>
-                             <span class="text">{llm_chunk_response.text}</span></p>'''
+                chunk_text = escapejs(llm_chunk_response.text)
+                if is_first:
+                    is_first = False
+                    # 새로운 메시지를 UI에 추가
+                    yield f"""
+                        <p id="{assistant_message_id}">
+                            <strong class="mr-1">어시스턴트</strong>
+                            <span class="text">{chunk_text}</span>
+                        </p>
+                    """
+                else:
+                    # 자바 스크립트를 통해, 기존 메시지의 텍스트에 chunk_text 추가
+                    yield f"""
+                        <script>
+                            (function() {{
+                                const el = document.querySelector('#{assistant_message_id} .text');
+                                if(el) el.textContent += `{chunk_text}`;
+                            }})();
+                        </script>
+                    """
+
         estimated_cost_usd = llm_chunk_response.get_cost_usd() or 0
         exchange_rate = 1300  # 현재 환율을 가정
         estimated_cost_krw = estimated_cost_usd * exchange_rate
