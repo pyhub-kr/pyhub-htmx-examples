@@ -1,0 +1,17 @@
+{% if not is_append %}
+    {# 새로운 메시지를 UI에 추가 #}
+    <p id="{{ assistant_message_id }}">
+        <strong class="mr-1">
+            {{ role }}
+        </strong>
+        <span class="text">{{ content }}{{ chunk_text }}</span>
+    </p>
+{% else %}
+    {# 자바 스크립트를 통해, 기존 메시지의 텍스트에 chunk_text 추가 #}
+    <script>
+        (function() {
+            const el = document.querySelector('#{{ assistant_message_id }} .text');
+            if(el) el.textContent += `{{ chunk_text }}`;
+        })();
+    </script>
+{% endif %}

@@ -5,5 +5,5 @@ app_name = "chat"
 
 urlpatterns = [
     path("", views.index, name="index"),
-    path("message/", views.message, name="message"),
+    path("chat/llm/", views.ChatLLMView.as_view(), name="chat-llm"),
 ]

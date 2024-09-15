@@ -1,82 +1,130 @@
-from typing import List, AsyncGenerator
+from typing import List, AsyncGenerator, TypedDict
 from uuid import uuid4
 
+from django.contrib.auth.decorators import login_required
 from django.core.files import File
-from django.http import StreamingHttpResponse
+from django.http import StreamingHttpResponse, HttpRequest, HttpResponse
 from django.shortcuts import render
+from django.template.loader import render_to_string
 from django.utils.html import escapejs
-from django.views.decorators.http import require_POST
+from django.views import View
 
 from .forms import MessageForm
 from .llm import make_llm_response, LLMResponse
 
 
+class ChatMessage(TypedDict):
+    role: str
+    content: str
+
+
+@login_required
 def index(request):
     return render(request, "chat/index.html")
 
 
-@require_POST
-async def message(request):
-    async def stream_response() -> AsyncGenerator[str, None]:
-        user_text = request.POST.get("user_text", "")
-        if user_text:
-            # photos를 시스템에 저장했다면, URL을 통해 보여줄 수 있습니다.
-            yield f'<p><strong class="mr-1">사용자</strong><span class="text">{user_text}</span></p>'
+class ChatLLMView(View):  # 컨셉 코드
+    system_prompt = ""
+    llm_vendor = "openai"
+    llm_model = "gpt-4o"
+    temperature = 1
+    max_tokens = 1024
+    list_template_name = "chat/_llm_message_list.html"
+    template_name = "chat/_llm_message.html"
 
-        form = MessageForm(data=request.POST, files=request.FILES)
-        if not form.is_valid():
-            error_message: str = ", ".join([
-                f"{field}: {', '.join(errors)}" for field, errors in form.errors.items()
-            ])
-            yield f'<p class="text-red-500">{error_message}</p>'
-            return
+    # 정적인 설정 변경은 위 클래스 변수 설정을 오버라이딩하고
+    # 동적인 설정 변경은 아래 메서드를 오버라이딩합니다.
+    def get_system_prompt(self) -> str: return self.system_prompt
+    def get_llm_vendor(self) -> str: return self.llm_vendor
+    def get_temperature(self) -> float: return self.temperature
+    def get_max_tokens(self) -> int: return self.max_tokens
+    def get_llm_model(self) -> str: return self.llm_model
+    def get_list_template_name(self): return self.list_template_name
+    def get_template_name(self): return self.template_name
 
-        user_text = form.cleaned_data["user_text"]
-        photos: List[File] = form.cleaned_data["photos"]
-        vendor, model = "openai", "gpt-4o"
-        llm_stream_response = await make_llm_response(
-            vendor=vendor, model=model, system_prompt="", user_prompt=user_text,
-            chat_history=[], temperature=1.0, max_tokens=1024, stream=True, files=photos,
-        )
+    # 메시지 저장소로서 세션을 활용. 메서드를 오버라이딩하여 모델 활용도 가능
+    async def get_messages(self) -> List[ChatMessage]:
+        messages = await self.request.session.aget("chat_messages", [])
+        return messages
 
-        is_first = True
-        assistant_message_id: str = f"message-{uuid4().hex}"
-        llm_chunk_response = LLMResponse()
-        async for llm_chunk_response in llm_stream_response:
-            if llm_chunk_response.text:
-                chunk_text = escapejs(llm_chunk_response.text)
-                if is_first:
-                    is_first = False
-                    # 새로운 메시지를 UI에 추가
-                    yield f"""
-                        <p id="{assistant_message_id}">
-                            <strong class="mr-1">어시스턴트</strong>
-                            <span class="text">{chunk_text}</span>
-                        </p>
-                    """
-                else:
-                    # 자바 스크립트를 통해, 기존 메시지의 텍스트에 chunk_text 추가
-                    yield f"""
-                        <script>
-                            (function() {{
-                                const el = document.querySelector('#{assistant_message_id} .text');
-                                if(el) el.textContent += `{chunk_text}`;
-                            }})();
-                        </script>
-                    """
+    async def set_messages(self, messages: List[ChatMessage]) -> None:
+        await self.request.session.aset("chat_messages", messages)
+        await self.request.session.asave()
 
-        estimated_cost_usd = llm_chunk_response.get_cost_usd() or 0
-        exchange_rate = 1300  # 현재 환율을 가정
-        estimated_cost_krw = estimated_cost_usd * exchange_rate
+    async def clear_messages(self) -> None:
+        await self.request.session.apop("chat_messages")
+        await self.request.session.asave()
 
-        yield f"""
-            <p class="mb-2 text-sm text-gray-500">
-                입력 토큰: {llm_chunk_response.input_tokens},
-                출력 토큰: {llm_chunk_response.output_tokens},
-                예상 비용: ${estimated_cost_usd:.4f} USD (약 {estimated_cost_krw:.4f} 원)
-            </p>
-        """
+    async def get(self, request: HttpRequest) -> HttpResponse:
+        messages = await self.get_messages()
+        return render(request, self.get_list_template_name(), {"messages": messages})
 
-    # SSE (Server-sent Events) 응답
-    return StreamingHttpResponse(stream_response(), content_type="text/event-stream")
+    async def post(self, request: HttpRequest) -> HttpResponse:
+
+        async def stream_response() -> AsyncGenerator[str, None]:
+            user_text = request.POST.get("user_text", "")
+            if user_text:
+                # photos를 시스템에 저장했다면, URL을 통해 보여줄 수 있습니다.
+                yield render_to_string(self.get_template_name(), {
+                    "role": "user",
+                    "content": user_text,
+                })
+
+            form = MessageForm(data=request.POST, files=request.FILES)
+            if not form.is_valid():
+                error_message: str = ", ".join([
+                    f"{field}: {', '.join(errors)}" for field, errors in form.errors.items()
+                ])
+                yield f'<p class="text-red-500">{error_message}</p>'
+                return
+
+            chat_history = await self.get_messages()
+
+            user_text = form.cleaned_data["user_text"]
+            photos: List[File] = form.cleaned_data["photos"]
+            vendor, model = self.get_llm_vendor(), self.get_llm_model()
+            llm_stream_response = await make_llm_response(
+                vendor=vendor, model=model, system_prompt=self.get_system_prompt(), user_prompt=user_text,
+                chat_history=chat_history, temperature=self.get_temperature(), max_tokens=self.get_max_tokens(), stream=True, files=photos,
+            )
+
+            is_first = True
+            assistant_message_id: str = f"message-{uuid4().hex}"
+            assistant_message = ""
+            llm_chunk_response = LLMResponse()
+            async for llm_chunk_response in llm_stream_response:
+                if llm_chunk_response.text:
+                    chunk_text = escapejs(llm_chunk_response.text)
+                    assistant_message += chunk_text
+                    yield render_to_string(
+                        self.get_template_name(),
+                        {
+                            "role": "assistant",
+                            "is_append": (not is_first),
+                            "assistant_message_id": assistant_message_id,
+                            "chunk_text": chunk_text,
+                        }
+                    )
+
+                    if is_first:
+                        is_first = False
+
+            chat_history.append(ChatMessage(role="user", content=user_text))
+            chat_history.append(ChatMessage(role="assistant", content=assistant_message))
+            await self.set_messages(chat_history)
+
+            estimated_cost_usd = llm_chunk_response.get_cost_usd() or 0
+            exchange_rate = 1300  # 현재 환율을 가정
+            estimated_cost_krw = estimated_cost_usd * exchange_rate
+
+            yield f"""
+                <p class="mb-2 text-sm text-gray-500">
+                    입력 토큰: {llm_chunk_response.input_tokens},
+                    출력 토큰: {llm_chunk_response.output_tokens},
+                    예상 비용: ${estimated_cost_usd:.4f} USD (약 {estimated_cost_krw:.4f} 원)
+                </p>
+            """
+
+        # SSE (Server-sent Events) 응답
+        return StreamingHttpResponse(stream_response(), content_type="text/event-stream")
 

@@ -1,0 +1,3 @@
+{% for message in messages %}
+    {% include "chat/_llm_message.html" with role=message.role content=message.content %}
+{% endfor %}
