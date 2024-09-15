@@ -1,0 +1,21 @@
+{% load uncached_static %}
+
+<c-vars class="" icon_class="h-6 w-6" name="" multiple=False preview_display_selector=""></c-vars>
+
+<label class="cursor-pointer p-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition duration-200 mr-2 {{ class }}">
+    <c-icons.photo-album class="{{ icon_class }}"></c-icons.photo-album>
+    <input type="file" accept="image/*" class="hidden"
+           {% if name %}name="{{ name }}"{% endif %}
+           {% if multiple %}multiple="multiple"{% endif %}/>
+</label>
+
+<script>
+  (function () {
+    const componentEl = document.currentScript.previousElementSibling;
+    const previewDisplayEl = document.querySelector("{{ preview_display_selector }}");
+    document.addEventListener('DOMContentLoaded', function () {
+      initImagePreviewFile(componentEl, previewDisplayEl);
+    });
+  })();
+</script>
+<script src="{% uncached_static "cotton/widgets/image_preview_file.js" %}"></script>

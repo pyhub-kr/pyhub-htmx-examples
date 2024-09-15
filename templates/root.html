@@ -29,4 +29,14 @@
         동시에 +1
         </c-button>
     </div>
+
+    <h2 class="mt-8 text-2xl font-semibold mb-2">이미지 미리보기 컴포넌트</h2>
+    <div class="flex flex-col p-1">
+        <div id="image-preview" class="mt-2 flex flex-wrap gap-2 py-2"></div>
+        <div class="flex items-center">
+            <c-widgets.image-preview-file name="photos" multiple
+                                          icon_class="w-6 h-6"
+                                          preview_display_selector="#image-preview"/>
+        </div>
+    </div>
 {% endblock %}
