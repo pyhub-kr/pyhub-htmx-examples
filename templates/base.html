@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pyhub-htmx-examples</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@2.0.2"></script>
+    <script src="//unpkg.com/alpinejs" defer></script>
+  </head>
+  <body>
+    <div class="container mx-auto px-4 py-8 max-w-3xl">
+      <h1 class="text-3xl font-bold mb-6">pyhub-htmx-examples</h1>
+      <div class="mb-8">
+        {% block content %}
+        {% endblock %}
+    </div>
+      <hr class="my-6 border-t border-gray-300" />
+      <footer class="text-center text-gray-600 text-sm">
+        copyright 2024
+        <a
+          href="https://pyhub.kr"
+          class="text-blue-600 hover:underline"
+          target="_blank">
+          파이썬사랑방
+        </a>
+      </footer>
+    </div>
+  </body>
+</html>
