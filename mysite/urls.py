@@ -5,6 +5,7 @@ from django.conf import settings
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("app/", include("app.urls")),
     path("melon/", include("melon.urls")),
     path("", TemplateView.as_view(
         template_name="root.html",
