@@ -48,6 +48,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "crispy_forms",
+    # "crispy_bootstrap5",
+    "crispy_tailwind",
     "django_cotton",
     "app",
     "chat",
@@ -153,3 +156,11 @@ NCP_MAP_CLIENT_ID = env.str("NCP_MAP_CLIENT_ID", default="")
 # LLM
 
 OPENAI_API_KEY = env.str("OPENAI_API_KEY", default="")
+
+
+# django-crispy-forms
+
+# CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+# CRISPY_TEMPLATE_PACK = "bootstrap5"
+CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"
+CRISPY_TEMPLATE_PACK = "tailwind"

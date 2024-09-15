@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+    {# 템플릿에서는 crispy 호출이면 끝. #}
+    {# 모든 레이아웃 구성은 폼의 helper에서 전담 #}
+    
+    {% load crispy_forms_tags %}
+    
+    {# form 태그와 csrf_token은 자동 생성/추가됩니다. #}
+    {% crispy form form.helper %}
+{% endblock %}

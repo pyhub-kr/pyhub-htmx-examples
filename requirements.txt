@@ -3,3 +3,6 @@ channels[daphne]
 django-cotton==0.9.40
 django-environ==0.11.2
 openai==1.45.0
+django-crispy-forms==2.3
+crispy-bootstrap5==2024.2
+crispy-tailwind==1.0.3
