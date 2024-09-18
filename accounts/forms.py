@@ -9,19 +9,19 @@ from .models import User
 
 class BlueSubmit(Submit):
     def __init__(self, *args, **kwargs):
-        kwargs.setdefault('css_class', 'bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded')
+        kwargs.setdefault('css_class', 'bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded cursor-pointer')
         super().__init__(*args, **kwargs)
 
 
 class RedSubmit(Submit):
     def __init__(self, *args, **kwargs):
-        kwargs.setdefault('css_class', 'bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded')
+        kwargs.setdefault('css_class', 'bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded cursor-pointer')
         super().__init__(*args, **kwargs)
 
 
 class PurpleSubmit(Submit):
     def __init__(self, *args, **kwargs):
-        kwargs.setdefault('css_class', 'bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded')
+        kwargs.setdefault('css_class', 'bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded cursor-pointer')
         super().__init__(*args, **kwargs)
 
 
