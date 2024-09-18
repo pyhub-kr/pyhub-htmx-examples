@@ -1,8 +1,10 @@
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Row
+from crispy_forms.layout import Layout, Row, Field
 from crispy_tailwind.layout import Submit
 
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+
+from .models import User
 
 
 class BlueSubmit(Submit):
@@ -21,6 +23,25 @@ class PurpleSubmit(Submit):
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('css_class', 'bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded')
         super().__init__(*args, **kwargs)
+
+
+class SignupForm(UserCreationForm):
+    helper = FormHelper()
+    helper.attrs = {"novalidate": True}        # form 태그에 추가할 속성
+    helper.layout = Layout(
+        "username",
+        Row(
+            Field("password1", wrapper_class="w-1/2"),
+            Field("password2", wrapper_class="w-1/2"),
+            css_class="flex flex-row gap-2"
+        )
+    )
+    helper.add_input(
+        PurpleSubmit("submit", "회원가입"),
+    )
+
+    class Meta(UserCreationForm.Meta):
+        model = User
 
 
 class LoginForm(AuthenticationForm):

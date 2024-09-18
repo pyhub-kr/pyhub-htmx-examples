@@ -3,8 +3,19 @@ from django.contrib.auth.views import LogoutView as DjangoLogoutView
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.urls import reverse_lazy
+from django.views.generic import CreateView
 
-from accounts.forms import LoginForm
+from .forms import LoginForm, SignupForm
+
+
+class SignupView(CreateView):
+    form_class = SignupForm
+    template_name = "_crispy_form.html"
+    success_url = reverse_lazy("accounts:login")
+
+
+signup = SignupView.as_view()
 
 
 class LoginView(DjangoLoginView):

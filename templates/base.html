@@ -18,7 +18,8 @@
             <button type="submit" class="text-blue-600 hover:underline">로그아웃</button>
           </form>
         {% else %}
-          <a href="{% url 'accounts:login' %}" class="text-blue-600 hover:underline">로그인</a>
+          <a href="{% url 'accounts:login' %}" class="text-blue-600 hover:underline mr-4">로그인</a>
+          <a href="{% url 'accounts:signup' %}" class="text-blue-600 hover:underline">회원가입</a>
         {% endif %}
       </nav>
       <h1 class="text-3xl font-bold mb-6">pyhub-htmx-examples</h1>
