@@ -7,6 +7,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("accounts.urls")),
     path("app/", include("app.urls")),
+    path("blog/", include("blog.urls")),
     path("chat/", include("chat.urls")),
     path("melon/", include("melon.urls")),
     path("", TemplateView.as_view(
@@ -14,4 +15,3 @@ urlpatterns = [
         extra_context={"ncp_map_client_id": settings.NCP_MAP_CLIENT_ID}
     ), name="root"),
 ]
-

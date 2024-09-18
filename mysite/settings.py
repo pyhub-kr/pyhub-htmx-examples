@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "django_cotton",
     "accounts",
     "app",
+    "blog",
     "chat",
     "melon",
 ]
