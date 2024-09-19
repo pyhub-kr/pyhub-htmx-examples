@@ -1,6 +1,12 @@
-from typing import List, AsyncGenerator, TypedDict
+import asyncio
+import functools
+import logging
+from contextlib import aclosing
+from typing import List, AsyncGenerator, TypedDict, Optional, Dict
 from uuid import uuid4
 
+from asgiref.sync import sync_to_async
+from channels.layers import get_channel_layer
 from django.contrib.auth.decorators import login_required
 from django.core.files import File
 from django.http import StreamingHttpResponse, HttpRequest, HttpResponse
@@ -11,6 +17,9 @@ from django.views import View
 
 from .forms import MessageForm
 from .llm import make_llm_response, LLMResponse
+
+
+logger = logging.getLogger(__name__)
 
 
 class ChatMessage(TypedDict):
@@ -145,3 +154,85 @@ class EnglishTutorChatLLMView(ChatLLMView):
     llm_model = "gpt-4o-mini"
     temperature = 1
     max_tokens = 4096
+
+
+class MultiUserChatView(View):  # 기본 컨셉만 구현
+    room_name: Optional[str] = "test-room"
+
+    def get_room_name(self) -> str:
+        # 채팅방 이름 획득 (채널 레이어 그룹명 규칙 : 100자 미만, 알파벳/숫자/하이픈/언더바/마침표)
+        return self.room_name
+
+    async def get(self, request: HttpRequest) -> HttpResponse:
+        """
+        SSE 연결을 설정하고 채팅 메시지를 스트리밍합니다.
+        채널 레이어를 통해 실시간으로 메시지를 수신하고 클라이언트에게 전달합니다.
+        """
+        async def stream_response():
+            channel_layer = get_channel_layer()
+            if channel_layer is None:
+                yield f"data: <p class='text-red-500'>CHANNEL_LAYERS default 설정이 누락되었습니다.</p>\n\n"
+            else:
+                channel_name = await channel_layer.new_channel()  # 현 클라이언트의 식별자 생성
+                channel_receive = functools.partial(channel_layer.receive, channel_name)
+                room_name = self.get_room_name()
+
+                try:
+                    await channel_layer.group_add(room_name, channel_name)  # 지정 그룹에 추가
+                    while True:
+                        try:
+                            new_message: Dict = await asyncio.wait_for(channel_receive(), timeout=1)
+                            # TODO: type에 따른 분기
+                            formatted_message = "<p><strong class='mr-1'>{username}</strong>{text}</p></div>".format(
+                              **new_message
+                            )
+
+                            yield f"data: {formatted_message}\n\n"
+                        except asyncio.CancelledError:  # 웹브라우저 클라이언트와 연결 끊김
+                            break
+                        except asyncio.TimeoutError:
+                            pass
+                except Exception as e:
+                    logger.error(f"Error in ChatSSEView: {e}")
+                finally:
+                    await channel_layer.group_discard("chat_group", channel_name)
+
+        async def wrapped_stream_response():
+            async with aclosing(stream_response()) as stream:
+                async for item in stream:
+                    yield item
+
+        response = StreamingHttpResponse(
+            wrapped_stream_response(), content_type="text/event-stream"
+        )
+        response["Cache-Control"] = "no-cache"
+        return response
+
+    async def post(self, request: HttpRequest) -> HttpResponse:
+        """
+        채팅 메시지에 대한 POST 요청을 처리합니다.
+        폼을 검증하고, 메시지를 채널 레이어를 통해 전파한 후, HTTP 응답을 반환합니다.
+        """
+
+        username: str = await sync_to_async(
+            lambda: request.user.username or "anonymous"
+        )()
+        room_name = self.get_room_name()
+        form = MessageForm(data=request.POST, files=request.FILES)
+
+        channel_layer = get_channel_layer()
+
+        if channel_layer is None:
+            return HttpResponse(
+                "<div class='text-red-500'>CHANNEL_LAYERS default 설정이 누락되었습니다.</div>"
+            )
+        elif form.is_valid() is False:
+            return HttpResponse(f"<div class='text-red-500'>{form.errors}</div>")
+        else:
+            user_text = form.cleaned_data["user_text"]
+            # Channel Layer를 통해 채팅 메시지 전파
+            await channel_layer.group_send(
+                room_name,
+                {"type": "chat.message", "username": username, "text": user_text},
+            )
+            return HttpResponse()
