@@ -60,6 +60,11 @@ INSTALLED_APPS = [
     "melon",
 ]
 
+if DEBUG:
+    INSTALLED_APPS += [
+        "debug_toolbar",
+    ]
+
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
@@ -70,6 +75,11 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+if "debug_toolbar" in INSTALLED_APPS:
+    MIDDLEWARE += [
+        "debug_toolbar.middleware.DebugToolbarMiddleware",
+    ]
 
 ROOT_URLCONF = "mysite.urls"
 
@@ -210,4 +220,11 @@ CORS_ALLOW_CREDENTIALS = env.bool("CORS_ALLOW_CREDENTIALS", default=True)
 
 
 # 지정 출처(origin)으로부터의 POST 요청을 허용하고 CSRF 검증 수행
-CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[FRONT_HOST_WITH_SCHEME])
+CSRF_TRUSTED_ORIGINS = env.list(
+    "CSRF_TRUSTED_ORIGINS", default=[FRONT_HOST_WITH_SCHEME]
+)
+
+
+# django-debug-toolbar
+
+INTERNAL_IPS = ["127.0.0.1"]

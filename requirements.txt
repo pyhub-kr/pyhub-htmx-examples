@@ -10,3 +10,6 @@ crispy-tailwind==1.0.3
 
 faker==28.4.1
 factory-boy==3.3.1
+
+django-debug-toolbar
+

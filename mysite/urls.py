@@ -1,3 +1,4 @@
+from django.apps import apps
 from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import TemplateView
@@ -15,3 +16,8 @@ urlpatterns = [
         extra_context={"ncp_map_client_id": settings.NCP_MAP_CLIENT_ID}
     ), name="root"),
 ]
+
+if apps.is_installed("debug_toolbar"):
+    urlpatterns += [
+        path("debug-toolbar/", include("debug_toolbar.urls")),
+    ]
