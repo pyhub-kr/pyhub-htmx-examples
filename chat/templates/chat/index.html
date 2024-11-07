@@ -1,46 +1,45 @@
 {% extends "chat/base.html" %}
-{% load uncached_static %}
+{# {% load uncached_static %} #}
 
 {% block content %}
 <div class="bg-gray-100 flex flex-col h-screen">
-    <div class="flex flex-col flex-grow overflow-hidden">
+    <div hx-ext="ws" ws-connect="/ws/chat/llm/"
+         hx-on::ws-before-send="
+            const formEl = this.querySelector('form');
+            if(!!formEl.user_text.value) { formEl.reset(); }
+            else { event.preventDefault(); }
+         "
+         {# 채팅 메세지가 업데이트될 때마다, 자동 스크롤 #}
+         hx-on::ws-after-message="setTimeout(() => {
+            const el = this.querySelector('#chat-messages');
+            el.scrollTop = el.scrollHeight;
+         }, 0);"
+         hx-on::ws-error="alert('웹소켓 오류가 발생했습니다. 페이지를 새로고침합니다.'); window.location.reload();"
+         class="flex flex-col flex-grow overflow-hidden">
         <div id="chat-messages"
-             hx-get="{% url 'chat:chat-llm' %}"
-             {# hx-ext="sse" #}
-             {# sse-connect="{% url 'chat:chat-multi' %}" #}
-             {# sse-swap="message" #}
-             hx-swap="beforeend"
              class="bg-white rounded-lg shadow-md flex-grow overflow-y-auto p-4 m-4"
-             {# 채팅 메세지가 업데이트될 때마다, 자동 스크롤 #}
-             hx-on::after-swap="setTimeout(() => { this.scrollTop = this.scrollHeight; }, 0);"
-             {# hx-on::sse-error="console.log('htmx:sseError'); this.innerHTML += '<p class=\'text-red-500\'>SSE 연결 오류가 발생했습니다.</p>';" #}
         ></div>
-        <form id="chat-form" class="flex flex-col p-4" novalidate="novalidate"
-              hx-ext="streaming-html"
-              hx-post="{% url 'chat:chat-llm' %}"
-              {# hx-post="{% url 'chat:chat-multi' %}" #}
-              hx-target="#chat-messages"
-              hx-swap="beforeend"
-              hx-on:chunk="if (event.detail.count === 0) { this.reset(); };"
-              {# hx-on::before-request="this.reset();" #}
-        >
-            {% csrf_token %}
+        <form ws-send
+              id="chat-form" class="flex flex-col p-4" novalidate="novalidate">
             <div class="mb-2">
                 <div id="image-preview" class="mt-2 flex flex-wrap gap-2"></div>
             </div>
             <div class="flex items-center">
-                {# pycharm 에서 Empty Tag 경고가 끝다면? - 설정 => Editor => Inspections => HTML 항목의 Empty tag 항목을 해제 #}
+                {# pycharm 에서 Empty Tag 경고가 뜬다면? - 설정 => Editor => Inspections => HTML 항목의 Empty tag 항목을 해제 #}
                 <c-widgets.image-preview-file name="photos" multiple="multiple"
                                               icon_class="w-6 h-6"
-                                              preview_display_selector="#image-preview" />
-                <input
-                        type="text"
-                        name="user_text"
-                        placeholder="메시지를 입력하세요"
-                        required="required"
-                        class="flex-grow border border-gray-300 rounded-l-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        autocomplete="off"/>
-                <button type="submit"
+                                              preview_display_selector="#image-preview"
+                                              {# 이미지는 base64 인코딩해서 별도 필드로 전송 #}
+                                              with_base64_field="true"
+                />
+                <input type="text"
+                       name="user_text"
+                       placeholder="메시지를 입력하세요"
+                       required="required"
+                       class="flex-grow border border-gray-300 rounded-l-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                       autocomplete="off"/>
+                <button
+                        type="submit"
                         class="bg-blue-500 text-white px-6 py-2 rounded-r-lg hover:bg-blue-600 transition duration-200">
                     전송
                 </button>
@@ -51,6 +50,7 @@
 {% endblock %}
 
 {% block extra-script %}
-    <script src="{% uncached_static 'htmx-ext/streaming-html.js' %}"></script>
+    <script src="//unpkg.com/htmx-ext-ws@2.0.1/ws.js"></script>
+    {# <script src="{% uncached_static 'htmx-ext/streaming-html.js' %}"></script> #}
     {# <script src="//unpkg.com/htmx-ext-sse@2.2.2/sse.js"></script> #}
 {% endblock %}

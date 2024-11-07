@@ -1,6 +1,9 @@
 {% load uncached_static %}
 
-<c-vars class="" icon_class="h-6 w-6" name="" multiple=False preview_display_selector=""></c-vars>
+{# 주의: 모든 값은 문자열로서 처리 : None은 "None" 문자열, False를 넘겨도 "False" 문자열로 처리됩니다. #}
+<c-vars class="" icon_class="h-6 w-6" name="" multiple="" preview_display_selector=""
+        with_base64_field=""
+></c-vars>
 
 <label class="cursor-pointer p-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition duration-200 mr-2 {{ class }}">
     <c-icons.photo-album class="{{ icon_class }}"></c-icons.photo-album>
@@ -11,10 +14,12 @@
 
 <script>
   (function () {
+    const withBase64Field = {% if with_base64_field %}true{% else %}false{% endif %};
+
     const componentEl = document.currentScript.previousElementSibling;
     const previewDisplayEl = document.querySelector("{{ preview_display_selector }}");
     document.addEventListener('DOMContentLoaded', function () {
-      initImagePreviewFile(componentEl, previewDisplayEl);
+      initImagePreviewFile(componentEl, previewDisplayEl, withBase64Field);
     });
   })();
 </script>
